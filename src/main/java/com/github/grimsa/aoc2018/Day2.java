@@ -3,11 +3,13 @@ package com.github.grimsa.aoc2018;
 import com.github.grimsa.io.ClasspathFileReader;
 import com.google.common.base.Strings;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Day2 {
     public static void main(final String... args) {
@@ -39,26 +41,18 @@ public class Day2 {
     }
 
     private static String findPrototypeFabricBoxIdCommonLetters(final List<String> boxIds) {
-        for (int i = 0; i < boxIds.size(); i++) {
-            for (int j = i + 1; j < boxIds.size(); j++) {
-                final var one = boxIds.get(i);
-                final var two = boxIds.get(j);
-                if (distance(one, two) == 1) {
-                    return commonPart(one, two);
-                }
-            }
-        }
-
-        return "N/A";
+        boxIds.sort(Comparator.naturalOrder());
+        final var expectedLength = boxIds.get(0).length() - 1;
+        return boxIds.stream()
+                .flatMap(id -> streamOfPartsCommonWithEachOtherId(id, boxIds))
+                .filter(commonPart -> commonPart.length() == expectedLength)
+                .findFirst()
+                .orElseThrow();
     }
 
-    private static String commonPart(final String one, final String two) {
-        return Strings.commonPrefix(one, two) + Strings.commonSuffix(one, two);
-    }
-
-    private static long distance(final String one, final String two) {
-        return IntStream.range(0, one.length())
-                .filter(index -> one.charAt(index) != two.charAt(index))
-                .count();
+    private static Stream<String> streamOfPartsCommonWithEachOtherId(final String id, final List<String> boxIds) {
+        final var followingIds = boxIds.subList(Collections.binarySearch(boxIds, id) + 1, boxIds.size());
+        return followingIds.stream()
+                .map(otherId -> Strings.commonPrefix(id, otherId) + Strings.commonSuffix(id, otherId));
     }
 }
