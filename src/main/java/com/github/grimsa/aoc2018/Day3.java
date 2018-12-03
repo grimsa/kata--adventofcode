@@ -13,6 +13,7 @@ public class Day3 {
                 .map(Area::parse)
                 .collect(Collectors.toList());
         System.out.println("Part one answer: " + countOverlappingSquares(claims));
+        System.out.println("Part two answer: " + findNonOverlappingClaim(claims).getId());
     }
 
     private static long countOverlappingSquares(final List<Area> claims) {
@@ -24,5 +25,12 @@ public class Day3 {
                                 .filter(count -> count > 1)
                                 .count()
                 ));
+    }
+
+    private static Area findNonOverlappingClaim(final List<Area> claims) {
+        return claims.stream()
+                .filter(claim -> claims.stream().noneMatch(claim::intersects))
+                .findFirst()
+                .orElseThrow();
     }
 }
